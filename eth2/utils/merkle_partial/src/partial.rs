@@ -97,24 +97,30 @@ impl<T: MerkleTreeOverlay> Partial<T> {
 
         let (index, begin, end) = bytes_at_path_helper::<T>(path)?;
 
-        let chunk = self
-            .cache
-            .get(index)
-            .ok_or(Error::ChunkNotLoaded(index))?
-            .to_vec()
-            .iter()
-            .cloned()
-            .enumerate()
-            .map(|(i, b)| {
-                if i >= begin && i < end {
-                    bytes[i - begin]
-                } else {
-                    b
-                }
-            })
-            .collect();
+        if bytes.len() == 32 {
+            self.cache.insert(index, bytes);
+        } else {
+            // the timestamp is 8 bytes. this stuff below pads it to 32 before inserting
+            let chunk = self
+                .cache
+                .get(index)
+                .ok_or(Error::ChunkNotLoaded(index))?
+                .to_vec()
+                .iter()
+                .cloned()
+                .enumerate()
+                .map(|(i, b)| {
+                    if i >= begin && i < end {
+                        bytes[i - begin]
+                    } else {
+                        b
+                    }
+                })
+                .collect();
+            println!("set_bytes inserting chunk: {:?}", chunk);
+            self.cache.insert(index, chunk);
+        }
 
-        self.cache.insert(index, chunk);
         Ok(())
     }
 
