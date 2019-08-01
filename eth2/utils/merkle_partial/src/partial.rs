@@ -152,7 +152,7 @@ fn bytes_at_path_helper<T: MerkleTreeOverlay + ?Sized>(
         Node::Composite(c) => Ok((c.index, 0, 32)),
         Node::Length(l) => Ok((l.index, 0, 32)),
         Node::Primitive(l) => {
-            for p in l.clone() {
+            for p in l {
                 let path_last = path.last().unwrap();
                 // match using u8 value if possible
                 if let Path::Index(p_index_val) = path_last {
